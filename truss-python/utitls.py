@@ -52,3 +52,14 @@ def solvedr():
     print('\nreaction f =', f_E)
     
     return f_E
+
+def solve_penalty(beta):
+    """
+    Solve the system of equations using the penalty method.
+    
+    Args:
+        beta : (float) Penalty parameter
+        
+    Returns:
+        f_E : (numpy.array(nd,1)) Reaction force vector
+    """
