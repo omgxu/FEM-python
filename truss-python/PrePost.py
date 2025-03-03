@@ -64,7 +64,7 @@ def create_model_json(DataFile):
     model.plot_truss= FEData['plot_truss']
     model.plot_node = FEData['plot_node']
     model.plot_tex  = FEData['plot_tex']
-    plottruss()
+    # plottruss()
 
 
 def set_LM():
@@ -95,10 +95,14 @@ def plottruss():
                     plt.text(XX[1], YY[1], str(model.IEN[i, 1]))
         elif model.ndof == 2:
             for i in range(model.nel):
-                XX = np.array([model.x[model.IEN[i, 0]-1], 
-                               model.x[model.IEN[i, 1]-1]])
-                YY = np.array([model.y[model.IEN[i, 0]-1], 
-                               model.y[model.IEN[i, 1]-1]])
+                # model.IEN[i, 0]是节点编号
+                node1 = model.IEN[i, 0]
+                node2 = model.IEN[i, 1]
+                alpha = 1e4
+                XX = np.array([model.x[node1-1]+alpha*model.d[node1*2-2].item(),
+                               model.x[node2-1]+alpha*model.d[node2*2-2].item()])
+                YY = np.array([model.y[node1-1]+alpha*model.d[node1*2-1].item(), 
+                               model.y[node2-1]+alpha*model.d[node2*2-1].item()])
                 plt.plot(XX, YY, "blue")
 
                 if model.plot_node == "yes":
