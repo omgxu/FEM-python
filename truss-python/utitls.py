@@ -70,7 +70,7 @@ def solve_penalty():
     beta = 10e7*np.average(np.trace(model.K))  # 计算罚参数beta
 
     f_beta = model.f.copy()
-    f_beta[:nd] = model.d[:nd]  # 置零前nd个自由度的约束力
+    f_beta[:nd] = beta * model.d[:nd]  # 将前nd个自由度的约束力设为beta*d
     K_beta = model.K.copy()
     np.fill_diagonal(K_beta[:nd, :nd], beta)  # 替换前nd个对角线元素为罚参数beta
 
