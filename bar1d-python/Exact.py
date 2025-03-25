@@ -81,6 +81,29 @@ def ExactSolution_CompressionBar(ax1, ax2):
     # plot stress 
     ax2.plot(xx,stre, '--r', label='Exact')
 
+def ExactSolution_CompressionBar_3_17(ax1, ax2):
+    """ 
+    Plots the exact displacement and stress of a elastic bar under compression (T3-17)
+    in axes ax1 and ax2, respectively.
+    
+    Args:
+        ax1 : axis to draw displacement distribution
+        ax2 : axis to draw stress distribution
+    """
+    xx = np.arange(0, 20, 0.01)
+
+    # exact displacement for a bar under compression
+    Ee = 10000
+    ue = (-xx**3/6 + xx)/Ee 
+    
+    # plot displacement 
+    ax1.plot(xx, ue, '--r',  label='Exact')
+    
+    # exact stress
+    stre = (-xx**2/2 + 1)
+    
+    # plot stress 
+    ax2.plot(xx,stre, '--r', label='Exact')
 
 def ExactSolution_ConcentratedForce(ax1, ax2):
     """
