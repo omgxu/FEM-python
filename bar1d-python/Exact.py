@@ -93,14 +93,13 @@ def ExactSolution_CompressionBar_3_17(ax1, ax2):
     xx = np.arange(0, 20, 0.01)
 
     # exact displacement for a bar under compression
-    Ee = 10000
-    ue = (-xx**3/6 + xx)/Ee 
+    ue = -10*xx**2 + 400*xx
     
     # plot displacement 
     ax1.plot(xx, ue, '--r',  label='Exact')
     
     # exact stress
-    stre = (-xx**2/2 + 1)
+    stre = 5*(-20*xx + 400)
     
     # plot stress 
     ax2.plot(xx,stre, '--r', label='Exact')
