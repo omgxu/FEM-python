@@ -250,9 +250,11 @@ def postprocessor():
 
     ax1.legend()
     ax2.legend()
+    if model.plot_tex == "yes":
+        tikzplotlib.save("fe_plot.tex")
     plt.show()
 
     # Convert matplotlib figures into PGFPlots figures stored in a Tikz file, 
     # which can be added into your LaTex source code by "\input{fe_plot.tex}"
-    if model.plot_tex == "yes":
-        tikzplotlib.save("fe_plot.tex")
+    # if model.plot_tex == "yes":
+    #    tikzplotlib.save("fe_plot.tex")
