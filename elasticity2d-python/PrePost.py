@@ -137,13 +137,19 @@ def point_and_trac():
 		ngp = abs(model.ngp)
 		w, gp = gauss(ngp)
 
-		for j in range(ngp):
-			psi = gp[j]
-			N = 0.5*np.array([[1-psi, 0, 1+psi, 0],
-							  [0, 1-psi, 0, 1+psi]])
+		if model.nen == 3:
 
-			traction = N@n_bce
-			ft = ft + w[j]*J*(N.T@traction)
+			ft = n_bce
+
+		if model.nen == 4:
+
+			for j in range(ngp):
+				psi = gp[j]
+				N = 0.5*np.array([[1-psi, 0, 1+psi, 0],
+								[0, 1-psi, 0, 1+psi]])
+
+				traction = N@n_bce
+				ft = ft + w[j]*J*(N.T@traction)
 
 		# Assemble nodal boundary force vector
 		ind1 = model.ndof*(node1 - 1)
@@ -199,17 +205,31 @@ def plot_mesh():
 			plt.plot([x1, x2], [y1, y2], color='r', linewidth=4)
 
 		for i in range(model.nel):
-			XX = [model.x[model.IEN[0, i] - 1], model.x[model.IEN[1, i] - 1], model.x[model.IEN[2, i] - 1],
-				  model.x[model.IEN[3, i] - 1], model.x[model.IEN[0, i] - 1]]
-			YY = [model.y[model.IEN[0, i] - 1], model.y[model.IEN[1, i] - 1], model.y[model.IEN[2, i] - 1],
-				  model.y[model.IEN[3, i] - 1], model.y[model.IEN[0, i] - 1]]
-			plt.plot(XX, YY, color='b')
 
-			if model.plot_nod == 'yes':
-				plt.text(XX[0], YY[0], str(model.IEN[0, i]))
-				plt.text(XX[1], YY[1], str(model.IEN[1, i]))
-				plt.text(XX[2], YY[2], str(model.IEN[2, i]))
-				plt.text(XX[3], YY[3], str(model.IEN[3, i]))
+			if model.nen == 3:
+				XX = [model.x[model.IEN[0, i] - 1], model.x[model.IEN[1, i] - 1], model.x[model.IEN[2, i] - 1],
+					model.x[model.IEN[0, i] - 1]]
+				YY = [model.y[model.IEN[0, i] - 1], model.y[model.IEN[1, i] - 1], model.y[model.IEN[2, i] - 1],
+					model.y[model.IEN[0, i] - 1]]
+				plt.plot(XX, YY, color='b')
+
+				if model.plot_nod == 'yes':
+					plt.text(XX[0], YY[0], str(model.IEN[0, i]))
+					plt.text(XX[1], YY[1], str(model.IEN[1, i]))
+					plt.text(XX[2], YY[2], str(model.IEN[2, i]))
+
+			if model.nen == 4:
+				XX = [model.x[model.IEN[0, i] - 1], model.x[model.IEN[1, i] - 1], model.x[model.IEN[2, i] - 1],
+					model.x[model.IEN[3, i] - 1], model.x[model.IEN[0, i] - 1]]
+				YY = [model.y[model.IEN[0, i] - 1], model.y[model.IEN[1, i] - 1], model.y[model.IEN[2, i] - 1],
+					model.y[model.IEN[3, i] - 1], model.y[model.IEN[0, i] - 1]]
+				plt.plot(XX, YY, color='b')
+
+				if model.plot_nod == 'yes':
+					plt.text(XX[0], YY[0], str(model.IEN[0, i]))
+					plt.text(XX[1], YY[1], str(model.IEN[1, i]))
+					plt.text(XX[2], YY[2], str(model.IEN[2, i]))
+					plt.text(XX[3], YY[3], str(model.IEN[3, i]))
 
 		plt.title('Initial structure')
 		plt.xlabel(r'$X$')
@@ -277,12 +297,23 @@ def displacement():
 		xnew = xnew.T.squeeze()
 		ynew = ynew.T.squeeze()
 		# plot deformed shape over the initial configuration
-		for i in range(model.nel):
-			XXnew = [xnew[model.IEN[0, i] - 1], xnew[model.IEN[1, i] - 1], xnew[model.IEN[2, i] - 1],
-				  xnew[model.IEN[3, i] - 1], xnew[model.IEN[0, i] - 1]]
-			YYnew = [ynew[model.IEN[0, i] - 1], ynew[model.IEN[1, i] - 1], ynew[model.IEN[2, i] - 1],
-				  ynew[model.IEN[3, i] - 1], ynew[model.IEN[0, i] - 1]]
-			plt.plot(XXnew, YYnew, color='k')
+		if model.nen == 3:
+
+			for i in range(model.nel):
+				XXnew = [xnew[model.IEN[0, i] - 1], xnew[model.IEN[1, i] - 1], xnew[model.IEN[2, i] - 1],
+					xnew[model.IEN[0, i] - 1]]
+				YYnew = [ynew[model.IEN[0, i] - 1], ynew[model.IEN[1, i] - 1], ynew[model.IEN[2, i] - 1],
+					ynew[model.IEN[0, i] - 1]]
+				plt.plot(XXnew, YYnew, color='k')
+
+		if model.nen == 4:
+
+			for i in range(model.nel):
+				XXnew = [xnew[model.IEN[0, i] - 1], xnew[model.IEN[1, i] - 1], xnew[model.IEN[2, i] - 1],
+					xnew[model.IEN[3, i] - 1], xnew[model.IEN[0, i] - 1]]
+				YYnew = [ynew[model.IEN[0, i] - 1], ynew[model.IEN[1, i] - 1], ynew[model.IEN[2, i] - 1],
+					ynew[model.IEN[3, i] - 1], ynew[model.IEN[0, i] - 1]]
+				plt.plot(XXnew, YYnew, color='k')
 
 		plt.title('Initial and deformed structure')
 

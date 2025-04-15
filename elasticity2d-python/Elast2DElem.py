@@ -29,71 +29,103 @@ def Elast2DElem(e):
 	# get coordinates of element nodes
 	je = model.IEN[:, e] - 1
 	C = np.array([model.x[je], model.y[je]]).T
+	# print("C: ", C)
 
-	ngpf = 2  # No. of gauss points for force calculation
-	if model.ngp == 2:	# Full integration
-		ngpk = 2   # No. of gauss points for stiffness calculation
-	elif abs(model.ngp) == 1:	# Reduced integration with/without hourglass control
-		ngpk = 1
-	else:
-		print("Error : Invalid value of ngp ({}) !".format(model.ngp))
+	if model.nen == 3:	# 3-node triangle element
 
-	# get gauss points and weights
-	wk, gpk = gauss(abs(ngpk))
-	wf, gpf = gauss(abs(ngpf))
+		B1y = C[2, 1] - C[1, 1]
+		B2y = C[0, 1] - C[2, 1]
+		B3y = C[1, 1] - C[0, 1]
+		B1x = C[1, 0] - C[2, 0]
+		B2x = C[2, 0] - C[0, 0]
+		B3x = C[0, 0] - C[1, 0]
+		Ae = 0.5 * (B1x * B2y - B2x * B1y)  # Area of element
+		# print("Ae: ", Ae)
 
-	# compute element stiffness matrix
-	for i in range(ngpk):
-		for j in range(ngpk):
-			eta = gpk[i]
-			psi = gpk[j]
+		B = np.array([[B1x, 0, B2x, 0, B3x, 0],
+				[0, B1y, 0, B2y, 0, B3y],
+				[B1y, B1x, B2y, B2x, B3y, B3x]])/(2 * Ae)
+		# print("B: ", B)
 
-			# derivative of the shape functions
-			B, detJ = BmatElast2D(eta, psi, C)
+		'''Le = np.zeros((model.nen*model.ndof, model.neq))
+		for i in range(model.nen):
+			for j in range(model.ndof):
+				Le[i*model.ndof+j, je[i]*model.ndof+j] = 1.0
+		# print("Le: ", Le)'''
 
-			# element stiffness matrix
-			ke = ke + wk[i]*wk[j]*detJ*(B.T@model.D@B)
+		# print("B.T@model.D@B", B.T@model.D@B)
 
-	# Reduced integration with hourglass control
-	if model.ngp == 1:		
-		B, detJ = BmatElast2D(0.0, 0.0, C)		
-		Ae = 4.0 * detJ  # Area of element
+		ke = B.T@model.D@B
 
-		hs_vectors = np.zeros((model.nen, 1))	# Hourglass shape vector (4*1)
-		hs_vectors[0] = (C[1,0]*(C[2,1]-C[3,1]) + C[2,0]*(C[3,1]-C[1,1]) + C[3,0]*(C[1,1]-C[2,1])) / Ae
-		hs_vectors[1] = (C[2,0]*(C[0,1]-C[3,1]) + C[3,0]*(C[2,1]-C[0,1]) + C[0,0]*(C[3,1]-C[2,1])) / Ae
-		hs_vectors[2] = (C[3,0]*(C[0,1]-C[1,1]) + C[0,0]*(C[1,1]-C[3,1]) + C[1,0]*(C[3,1]-C[0,1])) / Ae
-		hs_vectors[3] = (C[0,0]*(C[2,1]-C[1,1]) + C[1,0]*(C[0,1]-C[2,1]) + C[2,0]*(C[1,1]-C[0,1])) / Ae
-		
-		DNNorm = 0.0
-		DN = DNmatElast2D(0.0, 0.0, C)
-		for i in range(model.ndof):
-			for I in range(model.nen):
-				DNNorm = DNNorm + DN[i,I] * DN[i,I]
-		
-		hourglass_k = 0.01 * model.G * DNNorm
+		fe = model.b[:, e].reshape((-1, 1))
 
-		for I in range(model.nen):
+
+	if model.nen == 4:	# 4-node quadrilateral element
+
+		ngpf = 2  # No. of gauss points for force calculation
+		if model.ngp == 2:	# Full integration
+			ngpk = 2   # No. of gauss points for stiffness calculation
+		elif abs(model.ngp) == 1:	# Reduced integration with/without hourglass control
+			ngpk = 1
+		else:
+			print("Error : Invalid value of ngp ({}) !".format(model.ngp))
+
+		# get gauss points and weights
+		wk, gpk = gauss(abs(ngpk))
+		wf, gpf = gauss(abs(ngpf))
+
+		# compute element stiffness matrix
+		for i in range(ngpk):
+			for j in range(ngpk):
+				eta = gpk[i]
+				psi = gpk[j]
+
+				# derivative of the shape functions
+				B, detJ = BmatElast2D(eta, psi, C)
+
+				# element stiffness matrix
+				ke = ke + wk[i]*wk[j]*detJ*(B.T@model.D@B)
+
+		# Reduced integration with hourglass control
+		if model.ngp == 1:		
+			B, detJ = BmatElast2D(0.0, 0.0, C)		
+			Ae = 4.0 * detJ  # Area of element
+
+			hs_vectors = np.zeros((model.nen, 1))	# Hourglass shape vector (4*1)
+			hs_vectors[0] = (C[1,0]*(C[2,1]-C[3,1]) + C[2,0]*(C[3,1]-C[1,1]) + C[3,0]*(C[1,1]-C[2,1])) / Ae
+			hs_vectors[1] = (C[2,0]*(C[0,1]-C[3,1]) + C[3,0]*(C[2,1]-C[0,1]) + C[0,0]*(C[3,1]-C[2,1])) / Ae
+			hs_vectors[2] = (C[3,0]*(C[0,1]-C[1,1]) + C[0,0]*(C[1,1]-C[3,1]) + C[1,0]*(C[3,1]-C[0,1])) / Ae
+			hs_vectors[3] = (C[0,0]*(C[2,1]-C[1,1]) + C[1,0]*(C[0,1]-C[2,1]) + C[2,0]*(C[1,1]-C[0,1])) / Ae
+			
+			DNNorm = 0.0
+			DN = DNmatElast2D(0.0, 0.0, C)
 			for i in range(model.ndof):
-				a = model.ndof * I + i
-				for J in range(model.nen):
-						b = model.ndof * J + i
-						ke[a,b] = ke[a,b] + hs_vectors[I] * hs_vectors[J] * hourglass_k * Ae    
+				for I in range(model.nen):
+					DNNorm = DNNorm + DN[i,I] * DN[i,I]
+			
+			hourglass_k = 0.01 * model.G * DNNorm
 
-	# compute element nodal force vector
-	for i in range(ngpf):
-		for j in range(ngpf):
-			eta = gpf[i]
-			psi = gpf[j]
+			for I in range(model.nen):
+				for i in range(model.ndof):
+					a = model.ndof * I + i
+					for J in range(model.nen):
+							b = model.ndof * J + i
+							ke[a,b] = ke[a,b] + hs_vectors[I] * hs_vectors[J] * hourglass_k * Ae    
 
-			# shape functions matrix
-			N = NmatElast2D(eta, psi)
-			# derivative of the shape functions
-			B, detJ = BmatElast2D(eta, psi, C)
+		# compute element nodal force vector
+		for i in range(ngpf):
+			for j in range(ngpf):
+				eta = gpf[i]
+				psi = gpf[j]
 
-			# element nodal force vector
-			be = N@(model.b[:, e].reshape((-1, 1)))
-			fe = fe + wf[i]*wf[j]*detJ*(N.T@be)
+				# shape functions matrix
+				N = NmatElast2D(eta, psi)
+				# derivative of the shape functions
+				B, detJ = BmatElast2D(eta, psi, C)
+
+				# element nodal force vector
+				be = N@(model.b[:, e].reshape((-1, 1)))
+				fe = fe + wf[i]*wf[j]*detJ*(N.T@be)
 
 	return ke, fe
 
