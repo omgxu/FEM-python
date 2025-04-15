@@ -417,7 +417,7 @@ def stress_contours():
 		plt.title(r'$\sigma_{xx}$ contours')
 		plt.xlabel(r'$X$')
 		plt.ylabel(r'$Y$')
-		plt.colorbar(matplotlib.cm.ScalarMappable(norm=norm, cmap='jet'))
+		plt.colorbar(matplotlib.cm.ScalarMappable(norm=norm, cmap='jet'), ax=plt.gca())
 
         	# Convert matplotlib figures into PGFPlots figures
 		if model.plot_tex == "yes":
@@ -462,7 +462,7 @@ def stress_contours():
 		plt.title(r'Von Mises $\sigma$ contours')
 		plt.xlabel(r'$X$')
 		plt.ylabel(r'$Y$')
-		plt.colorbar(matplotlib.cm.ScalarMappable(norm=norm, cmap='jet'))
+		plt.colorbar(matplotlib.cm.ScalarMappable(norm=norm, cmap='jet'), ax=plt.gca())
         
 		# Convert matplotlib figures into PGFPlots figures
 		if model.plot_tex == "yes":
