@@ -18,7 +18,7 @@ import tikzplotlib
 import FEData as model
 from utitls import gauss
 from Exact import ExactSolution_TaperedBar, ExactSolution_CompressionBar, \
-     ExactSolution_ConcentratedForce
+    ExactSolution_CompressionBar_3_14, ExactSolution_CompressionBar_3_17, ExactSolution_ConcentratedForce
 from Bar1DElem import Nmatrix1D, Bmatrix1D
 
 
@@ -239,6 +239,10 @@ def postprocessor():
         ExactSolution_TaperedBar(ax1,ax2)
     elif model.Exact == "CompressionBar":
         ExactSolution_CompressionBar(ax1,ax2)
+    elif model.Exact == "CompressionBar_3_14":
+        ExactSolution_CompressionBar_3_14(ax1,ax2)
+    elif model.Exact == "CompressionBar_3_17":
+        ExactSolution_CompressionBar_3_17(ax1,ax2)
     elif model.Exact == "ConcentratedForce":
         ExactSolution_ConcentratedForce(ax1, ax2)
     elif model.Exact != None:
@@ -246,9 +250,11 @@ def postprocessor():
 
     ax1.legend()
     ax2.legend()
+    if model.plot_tex == "yes":
+        tikzplotlib.save("fe_plot.tex")
     plt.show()
 
     # Convert matplotlib figures into PGFPlots figures stored in a Tikz file, 
     # which can be added into your LaTex source code by "\input{fe_plot.tex}"
-    if model.plot_tex == "yes":
-        tikzplotlib.save("fe_plot.tex")
+    # if model.plot_tex == "yes":
+    #    tikzplotlib.save("fe_plot.tex")

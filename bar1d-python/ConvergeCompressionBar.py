@@ -14,14 +14,17 @@ Created on Thu Apr 30 21:05:47 2020
 """
 
 from Bar1D import FERun
-from Exact import ErrorNorm_CompressionBar
+from Exact import ErrorNorm_CompressionBar, ErrorNorm_CompressionBar_3_14, ErrorNorm_CompressionBar_3_17
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 # Json data files for 2L element
-files_2L = ("2-elements.json", "4-elements.json", "8-elements.json",
-            "16-elements.json", "32-elements.json")    
+# files_2L = ("2-elements.json", "4-elements.json", "8-elements.json",
+#             "16-elements.json", "32-elements.json")    
+
+files_2L = ("3-17-2.json", "3-17-4.json", "3-17-8.json",
+            "3-17-16.json")
 
 # Json data files for 3Q element
 files_3Q = ("2-elements-3Q.json", "4-elements-3Q.json", "8-elements-3Q.json",
@@ -33,10 +36,11 @@ h2 = np.zeros(n2L)
 L2Norm2 = np.zeros(n2L)
 EnNorm2 = np.zeros(n2L)
 for i in range(n2L):
-    FERun("Convergence/CompressionBar/"+files_2L[i])
+#    FERun("Convergence/CompressionBar/"+files_2L[i])
+    FERun(files_2L[i])
 
     # Calculate error norms for convergence study
-    h2[i], L2Norm2[i], EnNorm2[i] = ErrorNorm_CompressionBar()
+    h2[i], L2Norm2[i], EnNorm2[i] = ErrorNorm_CompressionBar_3_17()
 
 # Run FE analysis for all files using 3Q element
 n3Q = len(files_3Q)

@@ -81,6 +81,51 @@ def ExactSolution_CompressionBar(ax1, ax2):
     # plot stress 
     ax2.plot(xx,stre, '--r', label='Exact')
 
+def ExactSolution_CompressionBar_3_14(ax1, ax2):
+    """ 
+    Plots the exact displacement and stress of a elastic bar under compression (T3-14)
+    in axes ax1 and ax2, respectively.
+    
+    Args:
+        ax1 : axis to draw displacement distribution
+        ax2 : axis to draw stress distribution
+    """
+    xx = np.arange(0, 1, 0.01)
+
+    # exact displacement for a bar under compression
+    ue = xx**3
+    
+    # plot displacement 
+    ax1.plot(xx, ue, '--r',  label='Exact')
+    
+    # exact stress
+    stre = 3*xx**2
+    
+    # plot stress 
+    ax2.plot(xx,stre, '--r', label='Exact')
+
+def ExactSolution_CompressionBar_3_17(ax1, ax2):
+    """ 
+    Plots the exact displacement and stress of a elastic bar under compression (T3-17)
+    in axes ax1 and ax2, respectively.
+    
+    Args:
+        ax1 : axis to draw displacement distribution
+        ax2 : axis to draw stress distribution
+    """
+    xx = np.arange(0, 20, 0.01)
+
+    # exact displacement for a bar under compression
+    ue = -10*xx**2 + 400*xx
+    
+    # plot displacement 
+    ax1.plot(xx, ue, '--r',  label='Exact')
+    
+    # exact stress
+    stre = 5*(-20*xx + 400)
+    
+    # plot stress 
+    ax2.plot(xx,stre, '--r', label='Exact')
 
 def ExactSolution_ConcentratedForce(ax1, ax2):
     """
@@ -115,7 +160,6 @@ def ExactSolution_ConcentratedForce(ax1, ax2):
 
     # plot stress
     ax2.plot(np.append(xa, xb), np.append(ya, yb), '--r', label='Exact')
-
 
 def ErrorNorm_CompressionBar():
     """ 
@@ -172,6 +216,119 @@ def ErrorNorm_CompressionBar():
     
     return 2/model.nel, L2Norm, EnNorm
 
+def ErrorNorm_CompressionBar_3_14():
+    """ 
+    Calculate and print the error norm (L2 and energy norm) of the elastic 
+    bar under compression for convergence study
+    """
+    
+    ngp = 3
+    [w, gp] = gauss(ngp)    # extract Gauss points and weights
+    
+    L2Norm = 0
+    EnNorm = 0
+    
+    L2NormEx = 0
+    EnNormEx = 0
+    
+    for e in range(model.nel):
+        
+        de = model.d[model.LM[:,e]-1] # extract element nodal displacements
+        IENe = model.IEN[:,e]-1       # extract local connectivity information
+        xe = model.x[IENe]            # extract element x coordinates
+        J = (xe[-1] - xe[0])/2        # compute Jacobian
+        
+        for i in range(ngp):
+            xt = 0.5*(xe[0]+xe[-1])+J*gp[i]  # Gauss points in physical coordinates
+            
+            N = Nmatrix1D(xt,xe)     # shape functions matrix
+            B = Bmatrix1D(xt,xe)     # derivative of shape functions matrix
+            
+            Ee = N@model.E[IENe]     # Young's modulus at element gauss points
+            
+            uh  = N@de               # displacement at gauss point
+            # uex = (-xt**3/6 + xt)/Ee # Exact displacement
+            uex = xt**3
+            L2Norm += J*w[i]*(uex - uh)**2
+            L2NormEx += J*w[i]*(uex)**2
+            
+            sh  = B@de               # strain at Gauss points
+            # sex = (-xt**2/2 + 1)/Ee  # Exact strain
+            sex = 2*xt**2
+            EnNorm += 0.5*J*w[i]*Ee*(sex-sh)**2
+            EnNormEx += 0.5*J*w[i]*Ee*(sex)**2
+    
+    L2Norm = sqrt(L2Norm)
+    L2NormEx = sqrt(L2NormEx)
+    
+    EnNorm = sqrt(EnNorm)
+    EnNormEx = sqrt(EnNormEx)
+    
+    # print stresses at element gauss points
+    print('\nError norms')
+    print('%13s %13s %13s %13s %13s'
+          %('h','L2Norm','L2NormRel','EnNorm','EnNormRel'))
+    print('%13.6E %13.6E %13.6E %13.6E %13.6E\n'
+          %(1/model.nel, L2Norm, L2Norm/L2NormEx, EnNorm, EnNorm/EnNormEx)) # 1
+    
+    return 1/model.nel, L2Norm, EnNorm # 1
+
+def ErrorNorm_CompressionBar_3_17():
+    """ 
+    Calculate and print the error norm (L2 and energy norm) of the elastic 
+    bar under compression for convergence study
+    """
+    
+    ngp = 3
+    [w, gp] = gauss(ngp)    # extract Gauss points and weights
+    
+    L2Norm = 0
+    EnNorm = 0
+    
+    L2NormEx = 0
+    EnNormEx = 0
+    
+    for e in range(model.nel):
+        
+        de = model.d[model.LM[:,e]-1] # extract element nodal displacements
+        IENe = model.IEN[:,e]-1       # extract local connectivity information
+        xe = model.x[IENe]            # extract element x coordinates
+        J = (xe[-1] - xe[0])/2        # compute Jacobian
+        
+        for i in range(ngp):
+            xt = 0.5*(xe[0]+xe[-1])+J*gp[i]  # Gauss points in physical coordinates
+            
+            N = Nmatrix1D(xt,xe)     # shape functions matrix
+            B = Bmatrix1D(xt,xe)     # derivative of shape functions matrix
+            
+            Ee = N@model.E[IENe]     # Young's modulus at element gauss points
+            
+            uh  = N@de               # displacement at gauss point
+            # uex = (-xt**3/6 + xt)/Ee # Exact displacement
+            uex = -10*xt**2 + 400*xt
+            L2Norm += J*w[i]*(uex - uh)**2
+            L2NormEx += J*w[i]*(uex)**2
+            
+            sh  = B@de               # strain at Gauss points
+            # sex = (-xt**2/2 + 1)/Ee  # Exact strain
+            sex = -20*xt + 400
+            EnNorm += 0.5*J*w[i]*Ee*(sex-sh)**2
+            EnNormEx += 0.5*J*w[i]*Ee*(sex)**2
+    
+    L2Norm = sqrt(L2Norm)
+    L2NormEx = sqrt(L2NormEx)
+    
+    EnNorm = sqrt(EnNorm)
+    EnNormEx = sqrt(EnNormEx)
+    
+    # print stresses at element gauss points
+    print('\nError norms')
+    print('%13s %13s %13s %13s %13s'
+          %('h','L2Norm','L2NormRel','EnNorm','EnNormRel'))
+    print('%13.6E %13.6E %13.6E %13.6E %13.6E\n'
+          %(20/model.nel, L2Norm, L2Norm/L2NormEx, EnNorm, EnNorm/EnNormEx)) # change 2 to 20
+    
+    return 20/model.nel, L2Norm, EnNorm # change 2 to 20
 
 def ErrorNorm_ConcentratedForce(flag):
     """
