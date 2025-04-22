@@ -464,6 +464,9 @@ def stress_contours():
 		vmin = 0
 		vmax = 250
 		norm = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax)
+        # 初始化最大主应力及其位置
+		max_S1 = -np.inf
+		max_S1_pos = None
 		for i in range(model.nel):
 			XX = [[model.x[model.IEN[0, i] - 1], model.x[model.IEN[1, i] - 1]],
 				  [model.x[model.IEN[3, i] - 1], model.x[model.IEN[2, i] - 1]]]
@@ -489,6 +492,30 @@ def stress_contours():
 			YY = [model.y[model.IEN[0, i] - 1], model.y[model.IEN[1, i] - 1], model.y[model.IEN[2, i] - 1],
 				  model.y[model.IEN[3, i] - 1], model.y[model.IEN[0, i] - 1]]
 			plt.plot(XX, YY, color='k')
+
+        	# 更新最大主应力及其位置
+			current_max_S1 = np.max(S1)
+			if current_max_S1 > max_S1:
+				max_S1 = current_max_S1
+				max_S1_index = np.argmax(S1)  # 找到最大主应力对应的节点索引
+				max_S1_pos = [
+                    [model.x[model.IEN[max_S1_index, i] - 1],
+                     model.y[model.IEN[max_S1_index, i] - 1]]
+                ]
+
+        # 绘制外框线
+		for i in range(model.nel):
+			XX = [model.x[model.IEN[0, i] - 1], model.x[model.IEN[1, i] - 1], model.x[model.IEN[2, i] - 1],
+					model.x[model.IEN[3, i] - 1], model.x[model.IEN[0, i] - 1]]
+			YY = [model.y[model.IEN[0, i] - 1], model.y[model.IEN[1, i] - 1], model.y[model.IEN[2, i] - 1],
+					model.y[model.IEN[3, i] - 1], model.y[model.IEN[0, i] - 1]]
+			plt.plot(XX, YY, color='k')
+
+		# 高亮显示最大主应力位置
+		if max_S1_pos is not None:
+			max_x, max_y = max_S1_pos[0]
+			plt.scatter(max_x, max_y, color='red', s=100, label=f'Max $S_1$ = {max_S1:.2f}', zorder=5)
+			plt.legend()
 
 		plt.title(r'Von Mises $\sigma$ contours')
 		plt.xlabel(r'$X$')
