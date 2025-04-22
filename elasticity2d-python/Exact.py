@@ -227,18 +227,18 @@ def ErrorNorm_4_12():
 				eta = gp[i]
 				psi = gp[j]
 
-				xt = 0.5*(C[0,0]+C[1,0]+C[2,0]+C[3,0]) + 0.5*(C[0,1]+C[1,1]+C[2,1]+C[3,1])
-				yt = 0.5*(C[0,1]+C[1,1]+C[2,1]+C[3,1]) + 0.5*(C[0,0]+C[1,0]+C[2,0]+C[3,0])
+				xt = C[0,0] + 0.5*(C[1,0] - C[0,0])*(eta + 1.0)
+				yt = C[0,1] + 0.5*(C[2,1] - C[0,1])*(psi + 1.0)
 
-				N, detJ = NmatElast2D(eta, psi, C)
+				N = NmatElast2D(eta, psi)
 				B, detJ = BmatElast2D(eta, psi, C)
 
 				u_h = N@de
-				u_ex = 0.5*xt + 0.5*yt  # Exact displacement for the problem T4-12
+				u_ex = 48*xt*yt/1000  # Exact displacement for the problem T4-12
 				L2Norm += (u_h - u_ex)**2 * detJ * w[i] * w[j]
 
 				s_h = B@de
-				s_ex = 1.0  # Exact strain for the problem T4-12
+				s_ex = 480*yt  # Exact strain for the problem T4-12
 				EnNorm += (s_h - s_ex)**2 * detJ * w[i] * w[j]
 		
 		L2Norm = math.sqrt(L2Norm)
@@ -248,6 +248,8 @@ def ErrorNorm_4_12():
 
 		N_h = math.sqrt(model.nel/5)
 
-		print("h = %13.6E, L2Norm = %13.6E, EnNorm = %13.6E" %(length/(5*N_h), L2Norm, EnNorm))
+		h = length/(5*N_h)
 
-		return L2Norm, EnNorm
+		print("h = %13.6E, L2Norm = %13.6E, EnNorm = %13.6E" %(h, L2Norm, EnNorm))
+
+		return h, L2Norm, EnNorm
