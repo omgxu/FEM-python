@@ -117,16 +117,16 @@ def sigmaxx_4_12(N):
 	nplot=21
 	
 	xplot = np.zeros(5*N*nplot)
-	sigma_rr = np.zeros(5*N*nplot)
+	sigma_xx = np.zeros(5*N*nplot)
 	
 	xplot_osp = np.zeros(5*N)
 	sigma_osp = np.zeros(5*N)
 	
 	if N == 1:
-		e_all = np.array([1, 2, 3, 4])
+		e_all = np.array([0, 1, 2, 3, 4])
 		psiplot = -0.57735
 	elif N == 2:
-		e_all = np.array([1, 3, 5, 7, 9, 11, 13, 15, 17, 19])
+		e_all = np.array([0, 2, 4, 6, 8, 10, 12, 14, 16, 18])
 		psiplot = -0.1547
 
 	for index, e in enumerate(e_all):
@@ -151,16 +151,15 @@ def sigmaxx_4_12(N):
 			sigma_xx_e[i] = sigma_all[0]
 
 		xplot[index*nplot:(index+1)*nplot] = xplot_e[:]
-		sigma_rr[index*nplot:(index+1)*nplot] = sigma_xx_e[:]
+		sigma_xx[index*nplot:(index+1)*nplot] = sigma_xx_e[:]
 		
 		xplot_osp[index] = xplot_e[10]
 		sigma_osp[index] = sigma_xx_e[10]
 
-	return xplot, sigma_rr, xplot_osp, sigma_osp
+	return xplot, sigma_xx, xplot_osp, sigma_osp
 
 def deflection_4_12(N):
 
-	dis = model.d[model.ID - 1]
 	nplot=21
 	
 	xplot = np.zeros(5*N*nplot)
@@ -170,10 +169,10 @@ def deflection_4_12(N):
 	deflection_osp = np.zeros(5*N)
 	
 	if N == 1:
-		e_all = np.array([1, 2, 3, 4])
+		e_all = np.array([0, 1, 2, 3, 4])
 		psiplot = 0.0
 	elif N == 2:
-		e_all = np.array([1, 3, 5, 7, 9, 11, 13, 15, 17, 19])
+		e_all = np.array([0, 2, 4, 6, 8, 10, 12, 14, 16, 18])
 		psiplot = 1.0
 
 	for index, e in enumerate(e_all):
@@ -235,11 +234,11 @@ def ErrorNorm_4_12():
 
 				u_h = N@de
 				u_ex = 48*xt*yt/1000  # Exact displacement for the problem T4-12
-				L2Norm += (u_h - u_ex)**2 * detJ * w[i] * w[j]
+				L2Norm += (u_h[0] - u_ex)**2 * detJ * w[i] * w[j]
 
 				s_h = B@de
 				s_ex = 480*yt  # Exact strain for the problem T4-12
-				EnNorm += (s_h - s_ex)**2 * detJ * w[i] * w[j]
+				EnNorm += (s_h[0] - s_ex)**2 * detJ * w[i] * w[j]
 		
 		L2Norm = math.sqrt(L2Norm)
 		EnNorm = math.sqrt(EnNorm)

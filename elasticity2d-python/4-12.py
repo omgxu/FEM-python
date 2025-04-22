@@ -1,6 +1,7 @@
 from Elasticity2D import FERun
-from Exact import Exact_stress_4_12, Exact_deflection_4_12, sigmaxx_4_12, deflection_4_12
+from Exact import Exact_stress_4_12, Exact_deflection_4_12, sigmaxx_4_12, deflection_4_12, ErrorNorm_4_12
 
+import math
 import numpy as np
 import matplotlib.pyplot as plt
 import tikzplotlib
@@ -33,18 +34,33 @@ sigma_xx_2 = np.zeros((10*nplot, n1))
 sigma_xx_1_osp = np.zeros((5, n1))
 sigma_xx_2_osp = np.zeros((10, n1))
 
+h_all = []
+L2Norm_all = []
+EnNorm_all = []
+
 for i in range(n1):
     FERun("4-12/"+files_1[i])
 
     xplot1[:,i], deflection_1[:,i], xplot1_osp[:,i], deflection_1_osp[:,i] = deflection_4_12(1)
     xplot1[:,i], sigma_xx_1[:,i], xplot1_osp[:,i], sigma_xx_1_osp[:,i] = sigmaxx_4_12(1)
 
+    if i == 1:
+        h, L2Norm, EnNorm = ErrorNorm_4_12()
+        h_all.append(h)
+        L2Norm_all.append(L2Norm)
+        EnNorm_all.append(EnNorm)
 
 for i in range(n2):
     FERun("4-12/"+files_2[i])
 
     xplot2[:,i], deflection_2[:,i], xplot2_osp[:,i], deflection_2_osp[:,i] = deflection_4_12(2)
     xplot2[:,i], sigma_xx_2[:,i], xplot2_osp[:,i], sigma_xx_2_osp[:,i] = sigmaxx_4_12(2)
+
+    if i == 1:
+        h, L2Norm, EnNorm = ErrorNorm_4_12()
+        h_all.append(h)
+        L2Norm_all.append(L2Norm)
+        EnNorm_all.append(EnNorm)
 
 fig, (ax0) = plt.subplots(1,1)
 ax0.set_title('T4-12-1(deflection)')
@@ -93,3 +109,56 @@ tikzplotlib.save("T4-12-1(stress).tex")
 
 plt.savefig("T4-12-1(stress).pdf")
 plt.show()
+
+# 绘制对数坐标图
+
+# 创建图形
+plt.figure(figsize=(8, 6))
+
+# 绘制曲线
+plt.plot(h_all, L2Norm_all, marker='o', label='L2Norm')
+
+# 设置对数刻度
+plt.xscale('log')  # 横轴为对数刻度
+plt.yscale('log')  # 纵轴为对数刻度
+
+# 添加标题和标签
+plt.title('L2Norm vs h')
+plt.xlabel('h (log scale)')
+plt.ylabel('L2Norm (log scale)')
+
+# 添加网格
+plt.grid(True, which="both", linestyle='--', linewidth=0.5)
+
+# 添加图例
+plt.legend()
+
+# 显示图形
+plt.show()
+
+# 创建图形
+plt.figure(figsize=(8, 6))
+
+# 绘制曲线
+plt.plot(h_all, EnNorm_all, marker='o', label='EnNorm')
+
+# 设置对数刻度
+plt.xscale('log')  # 横轴为对数刻度
+plt.yscale('log')  # 纵轴为对数刻度
+
+# 添加标题和标签
+plt.title('EnNorm vs h')
+plt.xlabel('h (log scale)')
+plt.ylabel('EnNorm (log scale)')
+
+# 添加网格
+plt.grid(True, which="both", linestyle='--', linewidth=0.5)
+
+# 添加图例
+plt.legend()
+
+# 显示图形
+plt.show()
+
+print('L2范数收敛率: ', (math.log10(L2Norm_all[1])-math.log10(L2Norm_all[0]))/(math.log10(h_all[1])-math.log10(h_all[0])))
+print('能量范数收敛率: ', (math.log10(EnNorm_all[1])-math.log10(EnNorm_all[0]))/(math.log10(h_all[1])-math.log10(h_all[0])))
