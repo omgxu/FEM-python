@@ -45,8 +45,27 @@ def Exact(ax1):
 	xplot = np.arange(a, b, dx)
 	line5, = ax1.plot(xplot, sigma_rr, 'r', label='Exact')
 
-def Exact_4_12():
-	pass
+def Exact_stress_4_12(ax):
+	a = 0.0
+	b = 5.0
+	dx = 0.1
+	nx  = math.ceil((b-a) / dx)
+	sigma_xx = np.zeros(nx, np.float)
+	x = np.arange(a, b, dx)
+	for index, xi in enumerate(x):
+		sigma_xx[index] = 480 * math.sqrt(3) / 12
+	ax.plot(x, sigma_xx, 'r', label='Exact')
+
+def Exact_deflection_4_12(ax):
+	a = 0.0
+	b = 5.0
+	dx = 0.1
+	nx  = math.ceil((b-a) / dx)
+	v = np.zeros(nx, np.float)
+	x = np.arange(a, b, dx)
+	for index, xi in enumerate(x):
+		v[index] = -24 * xi**2 / 1000
+	ax.plot(x, v, 'r', label='Exact')
 
 def sigmarr():
 	"""
@@ -94,8 +113,97 @@ def sigmarr():
 		
 	return xplot, sigma_rr, xplot_osp, sigma_osp
 
-def sigmaxx_4_12():
-	pass
+def sigmaxx_4_12(N):
+	nplot=21
+	
+	xplot = np.zeros(5*N*nplot)
+	sigma_rr = np.zeros(5*N*nplot)
+	
+	xplot_osp = np.zeros(5*N)
+	sigma_osp = np.zeros(5*N)
+	
+	if N == 1:
+		e_all = np.array([1, 2, 3, 4])
+		psiplot = -0.57735
+	elif N == 2:
+		e_all = np.array([1, 3, 5, 7, 9, 11, 13, 15, 17, 19])
+		psiplot = -0.1547
+
+	for index, e in enumerate(e_all):
+
+		# get coordinate and deflection of element nodes
+		je = model.IEN[:, e] - 1
+		C = np.array([model.x[je], model.y[je]]).T
+		de = model.d[model.LM[:,e]-1]
+
+		# equally distributed coordinates on the psi = 1 line of an element
+		xplot_e = np.linspace(C[1,0], C[2,0], nplot)
+			
+		etaplot = (2*xplot_e - C[1,0] - C[2,0])/(C[2,0] - C[1,0])
+
+		sigma_xx_e = np.zeros(nplot)
+		sigma_all = np.zeros(3)
+		
+		for i in range(nplot):
+			eta = etaplot[i]
+			B, detJ = BmatElast2D(eta, psiplot, C)
+			sigma_all = model.D@B@de
+			sigma_xx_e[i] = sigma_all[0]
+
+		xplot[index*nplot:(index+1)*nplot] = xplot_e[:]
+		sigma_rr[index*nplot:(index+1)*nplot] = sigma_xx_e[:]
+		
+		xplot_osp[index] = xplot_e[10]
+		sigma_osp[index] = sigma_xx_e[10]
+
+	return xplot, sigma_rr, xplot_osp, sigma_osp
+
+def deflection_4_12(N):
+
+	dis = model.d[model.ID - 1]
+	nplot=21
+	
+	xplot = np.zeros(5*N*nplot)
+	deflection = np.zeros(5*N*nplot)
+	
+	xplot_osp = np.zeros(5*N)
+	deflection_osp = np.zeros(5*N)
+	
+	if N == 1:
+		e_all = np.array([1, 2, 3, 4])
+		psiplot = 0.0
+	elif N == 2:
+		e_all = np.array([1, 3, 5, 7, 9, 11, 13, 15, 17, 19])
+		psiplot = 1.0
+
+	for index, e in enumerate(e_all):
+
+		# get coordinate and deflection of element nodes
+		je = model.IEN[:, e] - 1
+		C = np.array([model.x[je], model.y[je]]).T
+		de = model.d[model.LM[:,e]-1]
+
+		# equally distributed coordinates on the psi = 1 line of an element
+		xplot_e = np.linspace(C[1,0], C[2,0], nplot)
+			
+		etaplot = (2*xplot_e - C[1,0] - C[2,0])/(C[2,0] - C[1,0])
+
+		deflection_e = np.zeros(nplot)
+		
+		for i in range(nplot):
+			eta = etaplot[i]
+			N = NmatElast2D(eta, psiplot)
+			u_h = N@de
+			deflection_e[i] = u_h[1]
+
+		xplot[index*nplot:(index+1)*nplot] = xplot_e[:]
+		deflection[index*nplot:(index+1)*nplot] = deflection_e[:]
+		
+		xplot_osp[index] = xplot_e[10]
+		deflection_osp[index] = deflection_e[10]
+
+	return xplot, deflection, xplot_osp, deflection_osp
+
 
 def ErrorNorm_4_12():
 	"""
